@@ -54,8 +54,8 @@ export function RoutesPanel({ locations }: { locations: LocationRecord[] }) {
   const path: [number, number][] = route?.path.map((p) => [p.lat, p.lng]) ?? [];
 
   return (
-    <div className="flex h-full">
-      <div className="flex w-96 shrink-0 flex-col gap-4 overflow-y-auto border-r border-slate-200 bg-white p-5">
+    <div className="flex h-full flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
+      <div className="flex w-full shrink-0 flex-col gap-4 border-b border-slate-200 bg-white p-5 lg:h-full lg:w-96 lg:overflow-y-auto lg:border-b-0 lg:border-r">
         <div>
           <h2 className="text-base font-semibold text-slate-900">Calcular ruta</h2>
           <p className="mt-1 text-sm text-slate-500">
@@ -127,7 +127,7 @@ export function RoutesPanel({ locations }: { locations: LocationRecord[] }) {
         )}
       </div>
 
-      <div className="flex-1">
+      <div className="h-[60vh] shrink-0 lg:h-auto lg:flex-1">
         <MapContainer center={[-9.19, -75.02]} zoom={5} className="h-full w-full">
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

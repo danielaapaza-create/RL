@@ -95,7 +95,7 @@ export function LocationForm({ initial, onCancel, onSubmit }: LocationFormProps)
       }
     >
       <form id="location-form" onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field label="Nombre" error={errors.name}>
             <input
               value={form.name}
@@ -148,7 +148,7 @@ export function LocationForm({ initial, onCancel, onSubmit }: LocationFormProps)
           {resolveMessage && <p className="mt-1 text-xs text-slate-500">{resolveMessage}</p>}
         </Field>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field label="Latitud" error={errors.latitude}>
             <input
               type="number"
