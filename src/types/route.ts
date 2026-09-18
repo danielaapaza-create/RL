@@ -8,12 +8,12 @@ export interface RoutePoint {
 export interface RouteResult {
   distanceMeters: number;
   durationSeconds: number;
-  /** Polyline codificada (formato Google) para dibujar la ruta en el mapa. */
-  polyline: string | null;
+  /** Puntos del trazado de la ruta, listos para dibujar como polilínea. */
+  path: { lat: number; lng: number }[];
   origin: RoutePoint;
   destination: RoutePoint;
-  /** URL para abrir la misma ruta directamente en Google Maps. */
-  googleMapsUrl: string;
+  /** URL para abrir la misma ruta en Google Maps (solo enlace, no usa ninguna API). */
+  externalMapsUrl: string;
 }
 
 export interface RouteRequestError {

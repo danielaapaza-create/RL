@@ -11,13 +11,11 @@
 //
 // Despliegue:
 //   supabase functions deploy resolve-link
-//   supabase secrets set GOOGLE_MAPS_SERVER_KEY=... (opcional, ver abajo)
 //
 // Si en el futuro se requiere geocodificación adicional (por ejemplo, para
 // obtener el nombre/dirección de un lugar cuando la redirección solo trae
-// coordenadas), esta función es el lugar indicado para llamar a la
-// Geocoding API usando GOOGLE_MAPS_SERVER_KEY (clave de servidor, restringida
-// por IP, nunca la clave de navegador).
+// coordenadas), esta función es el lugar indicado para llamar a un servicio
+// de geocodificación del lado del servidor (p. ej. Nominatim de OpenStreetMap).
 // =============================================================================
 
 // deno-lint-ignore-file no-explicit-any
@@ -30,8 +28,6 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-const GOOGLE_MAPS_SERVER_KEY = Deno.env.get('GOOGLE_MAPS_SERVER_KEY');
 
 function extractCoordsFromRedirect(redirectUrl: string): { lat: number; lng: number } | null {
   const exact = redirectUrl.match(/!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)/);

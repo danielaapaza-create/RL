@@ -1,8 +1,8 @@
 # GeoLogística
 
-Plataforma web para centralizar, visualizar y gestionar ubicaciones logísticas sobre Google Maps: importación de referencias desde enlaces de Google Maps, listado con búsqueda y filtros, CRUD completo, y un módulo de rutas y distancias.
+Plataforma web para centralizar, visualizar y gestionar ubicaciones logísticas: importación de referencias desde enlaces de Google Maps, listado con búsqueda y filtros, CRUD completo, mapa interactivo sobre OpenStreetMap y un módulo de rutas y distancias.
 
-> **Estado del proyecto:** funcional y ejecutable de inmediato en modo de desarrollo sin credenciales reales (usa almacenamiento local del navegador y muestra el mapa deshabilitado hasta que configures una clave de Google Maps). Con las credenciales de Google Maps Platform y Supabase configuradas, queda lista para producción.
+> **Estado del proyecto:** funcional y ejecutable de inmediato, sin necesidad de ninguna credencial ni tarjeta de crédito — el mapa usa OpenStreetMap (gratuito, sin API key) y los datos se guardan en `localStorage` del navegador. Configurando Supabase (opcional) obtienes persistencia compartida entre dispositivos.
 
 ---
 
@@ -13,28 +13,27 @@ Plataforma web para centralizar, visualizar y gestionar ubicaciones logísticas 
 3. [Requisitos previos](#requisitos-previos)
 4. [Instalación](#instalación)
 5. [Ejecución local (sin credenciales)](#ejecución-local-sin-credenciales)
-6. [Configuración de Google Maps Platform](#configuración-de-google-maps-platform)
-7. [Configuración de Supabase](#configuración-de-supabase)
-8. [Variables de entorno](#variables-de-entorno)
-9. [Pruebas](#pruebas)
-10. [Despliegue](#despliegue)
-11. [Subir el proyecto a GitHub](#subir-el-proyecto-a-github)
-12. [Importación inicial de ubicaciones](#importación-inicial-de-ubicaciones)
-13. [Limitaciones conocidas](#limitaciones-conocidas)
-14. [Estructura del proyecto](#estructura-del-proyecto)
+6. [Configuración de Supabase](#configuración-de-supabase)
+7. [Variables de entorno](#variables-de-entorno)
+8. [Pruebas](#pruebas)
+9. [Despliegue](#despliegue)
+10. [Subir el proyecto a GitHub](#subir-el-proyecto-a-github)
+11. [Importación inicial de ubicaciones](#importación-inicial-de-ubicaciones)
+12. [Limitaciones conocidas](#limitaciones-conocidas)
+13. [Estructura del proyecto](#estructura-del-proyecto)
 
 ---
 
 ## Funcionalidades
 
-- **Mapa interactivo** con marcadores personalizados por categoría, encuadre automático, popups de información y sincronización con el listado lateral. No se colocan marcadores para ubicaciones sin coordenadas verificadas.
+- **Mapa interactivo** (OpenStreetMap vía Leaflet, sin API key) con marcadores personalizados por categoría, encuadre automático, popups de información y sincronización con el listado lateral. No se colocan marcadores para ubicaciones sin coordenadas verificadas.
 - **Panel lateral** con listado de ubicaciones, buscador, filtros por categoría/estado y contadores (registradas, geolocalizadas, pendientes, duplicadas).
 - **Panel de detalle** con nombre, código, categoría, coordenadas, dirección, enlace original, estado de geolocalización, fecha de registro y observaciones; botones para centrar en el mapa, editar, eliminar y abrir en Google Maps.
 - **CRUD completo** de ubicaciones, con validaciones (coordenadas dentro de rango, campos obligatorios).
 - **Resolución de enlaces de Google Maps**: coordenadas explícitas se extraen directamente; enlaces cortos (`maps.app.goo.gl`, `goo.gl/maps`) se resuelven mediante una función backend segura (Supabase Edge Function). Si no se puede resolver, la ubicación queda como **"Pendiente de geolocalización"**, conservando el enlace y permitiendo completar coordenadas manualmente.
 - **Detección de duplicados**: enlaces idénticos no generan marcadores duplicados (se conserva el registro, referenciado al original); ubicaciones con coordenadas coincidentes pero enlaces distintos se marcan como **"posible duplicado físico"** sin eliminarse automáticamente.
-- **Módulo de Rutas** independiente: selección de origen/destino, cálculo de distancia y tiempo con la Routes API, trazado de la ruta en el mapa y enlace para abrirla en Google Maps. Arquitectura preparada para múltiples paradas.
-- **Modo sin credenciales**: la app corre igual sin Supabase (usa `localStorage`) y muestra un aviso claro cuando falta la clave de Google Maps, en lugar de fallar.
+- **Módulo de Rutas** independiente: selección de origen/destino, cálculo de distancia y tiempo con OSRM (OpenStreetMap, sin API key), trazado de la ruta en el mapa y enlace para abrirla en Google Maps. Arquitectura preparada para múltiples paradas.
+- **Modo sin credenciales**: la app corre igual sin Supabase (usa `localStorage`); el mapa funciona siempre, con o sin Supabase configurado.
 
 ## Tecnologías utilizadas
 
@@ -42,9 +41,9 @@ Plataforma web para centralizar, visualizar y gestionar ubicaciones logísticas 
 |---|---|---|
 | Frontend | React 18 + TypeScript + Vite | |
 | Estilos | Tailwind CSS | |
-| Mapa | Google Maps JavaScript API | vía `@vis.gl/react-google-maps` (wrapper oficial recomendado por Google para React) |
+| Mapa | OpenStreetMap | vía `react-leaflet` / `leaflet`, gratuito y sin API key |
 | Geocodificación / resolución de enlaces | Backend propio (Supabase Edge Function) | ver justificación abajo |
-| Rutas y distancias | Google Routes API | |
+| Rutas y distancias | OSRM (Open Source Routing Machine) | servidor demo público sobre datos de OpenStreetMap, gratuito y sin API key |
 | Base de datos | Supabase (PostgreSQL + RLS) | con repositorio local de respaldo (`localStorage`) |
 | Pruebas | Vitest | |
 
@@ -53,8 +52,7 @@ Plataforma web para centralizar, visualizar y gestionar ubicaciones logísticas 
 ## Requisitos previos
 
 - [Node.js](https://nodejs.org/) 18 o superior y npm.
-- Una cuenta de [Google Cloud Platform](https://console.cloud.google.com/) con facturación habilitada (para Google Maps Platform).
-- Una cuenta de [Supabase](https://supabase.com/) (plan gratuito es suficiente para empezar).
+- Una cuenta de [Supabase](https://supabase.com/) (plan gratuito es suficiente para empezar; opcional, solo para persistencia compartida).
 - [Git](https://git-scm.com/) y una cuenta de GitHub, para el control de versiones.
 - Opcional: [Supabase CLI](https://supabase.com/docs/guides/cli) para desplegar la Edge Function de resolución de enlaces.
 
@@ -79,26 +77,10 @@ npm run dev
 Abre `http://localhost:5173`. En este modo:
 
 - Las ubicaciones se guardan en el `localStorage` del navegador (persisten entre recargas, pero solo en ese navegador).
-- El mapa muestra un aviso indicando que falta la clave de Google Maps, en vez de romperse.
+- El mapa funciona con normalidad (OpenStreetMap no requiere configuración ni clave).
 - Puedes crear, editar y eliminar ubicaciones, usar filtros y ver el panel de detalle con normalidad.
 
-Para la experiencia completa (mapa real, rutas, base de datos compartida), sigue las secciones siguientes.
-
-## Configuración de Google Maps Platform
-
-1. **Crear un proyecto** en [Google Cloud Console](https://console.cloud.google.com/projectcreate).
-2. **Habilitar las APIs necesarias** (menú "APIs y servicios" → "Biblioteca"):
-   - Maps JavaScript API
-   - Places API
-   - Geocoding API
-   - Routes API
-3. **Configurar facturación**: Google Maps Platform requiere una cuenta de facturación asociada al proyecto, aunque exista una capa gratuita mensual. Revisa las condiciones vigentes en [la página oficial de precios](https://mapsplatform.google.com/pricing/), ya que pueden cambiar; **este proyecto no garantiza que el uso sea gratuito**.
-4. **Crear y restringir las claves** (menú "Credenciales"):
-   - **Clave de navegador** (para el frontend): restríngela por **referente HTTP** (tu dominio, y `localhost` para desarrollo) y limita las APIs permitidas a Maps JavaScript API y Places API.
-   - **Clave de servidor** (para Edge Functions/backend, si decides mover ahí el cálculo de rutas): restríngela por **dirección IP** y a Geocoding API / Routes API.
-5. **Configurar variables de entorno** (ver siguiente sección).
-
-**Sobre costos:** varias de estas APIs se facturan por uso una vez agotada la cuota gratuita mensual. Antes de desplegar a producción, revisa los precios y configura **alertas de presupuesto** y, si es posible, **cuotas diarias** en Google Cloud Console para controlar el consumo.
+Para persistencia compartida entre dispositivos, sigue la sección siguiente (Supabase es opcional).
 
 ## Configuración de Supabase
 
@@ -125,12 +107,11 @@ cp .env.example .env
 
 | Variable | Dónde se usa | Notas |
 |---|---|---|
-| `VITE_GOOGLE_MAPS_BROWSER_KEY` | Frontend | Clave de navegador restringida por dominio/HTTP referrer. |
-| `VITE_GOOGLE_MAPS_MAP_ID` | Frontend (opcional) | Para estilos personalizados vía Cloud-based Map Styling. |
 | `VITE_SUPABASE_URL` | Frontend | URL pública del proyecto Supabase. |
 | `VITE_SUPABASE_ANON_KEY` | Frontend | Clave `anon`, segura de exponer si las políticas RLS están bien configuradas. |
-| `GOOGLE_MAPS_SERVER_KEY` | Backend (Edge Function) | Clave de servidor, restringida por IP. **Nunca** debe llevar el prefijo `VITE_` para no exponerse al navegador. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Backend (Edge Function) | Clave con privilegios elevados. **Nunca** usar en el frontend. |
+
+El mapa (OpenStreetMap/Leaflet) y el cálculo de rutas (OSRM) no requieren ninguna variable de entorno.
 
 Las variables con prefijo `VITE_` son las únicas que Vite expone al navegador; el resto solo debe usarse dentro de `supabase/functions/`.
 
@@ -141,7 +122,7 @@ npm run test        # ejecuta las pruebas una vez
 npm run test:watch  # modo interactivo
 ```
 
-Cobertura actual: utilidades de interpretación de enlaces de Google Maps, detección de duplicados (literal y físico) y validación de formularios — la lógica de negocio más sensible a errores. La integración real contra Google Maps Platform y Supabase se valida manualmente configurando credenciales de prueba, ya que depende de servicios externos.
+Cobertura actual: utilidades de interpretación de enlaces de Google Maps, detección de duplicados (literal y físico) y validación de formularios — la lógica de negocio más sensible a errores. La integración real contra Supabase se valida manualmente configurando credenciales de prueba, ya que depende de un servicio externo.
 
 ## Despliegue
 
@@ -194,7 +175,7 @@ Todas las coordenadas anteriores provienen de seguir la redirección real de cad
 
 ## Limitaciones conocidas
 
-- El cálculo de rutas llama a la Routes API directamente desde el navegador usando la clave de navegador; para producción de alto tráfico se recomienda mover esta llamada a una Edge Function (mismo patrón que `resolve-link`) para no exponer cuotas de la clave pública. El código deja este cambio señalado en `src/services/routesService.ts`.
+- El cálculo de rutas usa el servidor demo público de OSRM (`router.project-osrm.org`), gratuito pero sin SLA ni garantía de disponibilidad; para producción de alto tráfico se recomienda alojar tu propia instancia de OSRM (o un proveedor gestionado equivalente) y cambiar la URL en `src/services/routesService.ts`.
 - La resolución de enlaces cortos depende de que Google mantenga el mismo formato de redirección; si Google cambia el comportamiento, la Edge Function podría requerir ajustes menores.
 - El módulo de Rutas soporta un solo par origen-destino por diseño; los tipos (`RoutePoint`) ya están preparados para extenderse a múltiples paradas.
 - Sin Supabase configurado, los datos no se comparten entre navegadores/dispositivos (quedan en `localStorage`).
@@ -207,7 +188,7 @@ geologistica/
 │   ├── components/       # Componentes de UI (layout, mapa, ubicaciones, rutas, comunes)
 │   ├── pages/             # Vistas de alto nivel (Dashboard, Rutas)
 │   ├── services/          # Acceso a datos: Supabase, almacenamiento local, resolución de enlaces, rutas
-│   ├── hooks/              # Hooks de React (useLocations, useGoogleMaps)
+│   ├── hooks/              # Hooks de React (useLocations)
 │   ├── types/              # Tipos de TypeScript compartidos
 │   ├── utils/              # Lógica pura: parsing de enlaces, duplicados, validaciones, geo
 │   └── data/                # Carga inicial de las 9 ubicaciones

@@ -40,8 +40,7 @@ export function validateLocationInput(input: LocationInput): ValidationResult {
 
   if (input.original_url) {
     try {
-      // eslint-disable-next-line no-new
-      new URL(input.original_url);
+      void new URL(input.original_url);
     } catch {
       errors.original_url = 'El enlace no es una URL válida.';
     }

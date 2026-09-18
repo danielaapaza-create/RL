@@ -8,7 +8,6 @@ import { Modal } from '@/components/common/Modal';
 import { Spinner } from '@/components/common/Spinner';
 import { useLocations } from '@/hooks/useLocations';
 import { isSupabaseConfigured } from '@/services/supabaseClient';
-import { isGoogleMapsConfigured } from '@/hooks/useGoogleMaps';
 
 type ModalState = { kind: 'none' } | { kind: 'create' } | { kind: 'edit' } | { kind: 'delete' } | { kind: 'settings' };
 
@@ -110,8 +109,8 @@ export default function App() {
         <Modal title="Estado de la configuración" onClose={() => setModal({ kind: 'none' })}>
           <ul className="flex flex-col gap-3 text-sm">
             <li className="flex items-center justify-between rounded-md border border-slate-100 p-3">
-              <span>Google Maps Platform (mapa y marcadores)</span>
-              <StatusPill ok={isGoogleMapsConfigured()} />
+              <span>Mapa (OpenStreetMap, sin configuración necesaria)</span>
+              <StatusPill ok />
             </li>
             <li className="flex items-center justify-between rounded-md border border-slate-100 p-3">
               <span>Supabase (persistencia de datos)</span>

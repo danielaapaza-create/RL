@@ -1,42 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
-import { APIProvider, Map, AdvancedMarker, Pin, useMap } from '@vis.gl/react-google-maps';
+import { useMemo, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Polyline } from 'react-leaflet';
 import { computeRoute } from '@/services/routesService';
-import { getGoogleMapsBrowserKey } from '@/hooks/useGoogleMaps';
+import { createPinIcon } from '@/utils/mapIcons';
 import type { LocationRecord } from '@/types/location';
 import type { RouteResult } from '@/types/route';
-
-function decodePolyline(encoded: string): { lat: number; lng: number }[] {
-  // Decodificador estándar de polylines de Google (algoritmo público, sin dependencias externas).
-  let index = 0;
-  let lat = 0;
-  let lng = 0;
-  const points: { lat: number; lng: number }[] = [];
-
-  while (index < encoded.length) {
-    let shift = 0;
-    let result = 0;
-    let byte: number;
-    do {
-      byte = encoded.charCodeAt(index++) - 63;
-      result |= (byte & 0x1f) << shift;
-      shift += 5;
-    } while (byte >= 0x20);
-    lat += result & 1 ? ~(result >> 1) : result >> 1;
-
-    shift = 0;
-    result = 0;
-    do {
-      byte = encoded.charCodeAt(index++) - 63;
-      result |= (byte & 0x1f) << shift;
-      shift += 5;
-    } while (byte >= 0x20);
-    lng += result & 1 ? ~(result >> 1) : result >> 1;
-
-    points.push({ lat: lat / 1e5, lng: lng / 1e5 });
-  }
-
-  return points;
-}
 
 function formatDuration(seconds: number): string {
   const minutes = Math.round(seconds / 60);
@@ -57,8 +24,6 @@ export function RoutesPanel({ locations }: { locations: LocationRecord[] }) {
   const [route, setRoute] = useState<RouteResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const apiKey = getGoogleMapsBrowserKey();
 
   async function handleCalculate() {
     const origin = geolocated.find((l) => l.id === originId);
@@ -86,7 +51,7 @@ export function RoutesPanel({ locations }: { locations: LocationRecord[] }) {
     }
   }
 
-  const path = route?.polyline ? decodePolyline(route.polyline) : [];
+  const path: [number, number][] = route?.path.map((p) => [p.lat, p.lng]) ?? [];
 
   return (
     <div className="flex h-full">
@@ -151,7 +116,7 @@ export function RoutesPanel({ locations }: { locations: LocationRecord[] }) {
               <span className="font-semibold text-slate-900">{formatDuration(route.durationSeconds)}</span>
             </div>
             <a
-              href={route.googleMapsUrl}
+              href={route.externalMapsUrl}
               target="_blank"
               rel="noreferrer"
               className="mt-3 block text-center text-sm font-medium text-brand-600 underline"
@@ -163,54 +128,28 @@ export function RoutesPanel({ locations }: { locations: LocationRecord[] }) {
       </div>
 
       <div className="flex-1">
-        {!apiKey ? (
-          <div className="flex h-full items-center justify-center bg-slate-100 text-sm text-slate-500">
-            Configura VITE_GOOGLE_MAPS_BROWSER_KEY para visualizar la ruta en el mapa.
-          </div>
-        ) : (
-          <APIProvider apiKey={apiKey}>
-            <Map defaultCenter={{ lat: -9.19, lng: -75.02 }} defaultZoom={5} className="h-full w-full">
-              {route && (
-                <>
-                  <AdvancedMarker position={{ lat: route.origin.latitude, lng: route.origin.longitude }}>
-                    <Pin background="#16a34a" glyphColor="#fff" borderColor="#14532d" />
-                  </AdvancedMarker>
-                  <AdvancedMarker
-                    position={{ lat: route.destination.latitude, lng: route.destination.longitude }}
-                  >
-                    <Pin background="#dc2626" glyphColor="#fff" borderColor="#7f1d1d" />
-                  </AdvancedMarker>
-                  {path.length > 0 && <RoutePolyline path={path} />}
-                </>
+        <MapContainer center={[-9.19, -75.02]} zoom={5} className="h-full w-full">
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+          {route && (
+            <>
+              <Marker
+                position={[route.origin.latitude, route.origin.longitude]}
+                icon={createPinIcon('#16a34a')}
+              />
+              <Marker
+                position={[route.destination.latitude, route.destination.longitude]}
+                icon={createPinIcon('#dc2626')}
+              />
+              {path.length > 0 && (
+                <Polyline positions={path} pathOptions={{ color: '#2657f5', weight: 4, opacity: 0.9 }} />
               )}
-            </Map>
-          </APIProvider>
-        )}
+            </>
+          )}
+        </MapContainer>
       </div>
     </div>
   );
-}
-
-function RoutePolyline({ path }: { path: { lat: number; lng: number }[] }) {
-  // Se dibuja con la Maps JavaScript API directamente (google.maps.Polyline),
-  // ya que @vis.gl/react-google-maps no expone un componente propio para ello.
-  return <PolylineRenderer path={path} />;
-}
-
-function PolylineRenderer({ path }: { path: { lat: number; lng: number }[] }) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (!map || path.length === 0) return undefined;
-    const polyline = new google.maps.Polyline({
-      path,
-      strokeColor: '#2657f5',
-      strokeOpacity: 0.9,
-      strokeWeight: 4,
-    });
-    polyline.setMap(map);
-    return () => polyline.setMap(null);
-  }, [map, path]);
-
-  return null;
 }
