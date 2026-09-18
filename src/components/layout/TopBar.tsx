@@ -1,6 +1,7 @@
 interface TopBarProps {
   onAddLocation: () => void;
   onOpenSettings: () => void;
+  onToggleSidebar: () => void;
   search: string;
   onSearchChange: (value: string) => void;
   activeView: 'mapa' | 'rutas';
@@ -10,13 +11,23 @@ interface TopBarProps {
 export function TopBar({
   onAddLocation,
   onOpenSettings,
+  onToggleSidebar,
   search,
   onSearchChange,
   activeView,
   onChangeView,
 }: TopBarProps) {
   return (
-    <header className="flex h-16 shrink-0 items-center gap-4 border-b border-slate-200 bg-white px-4 shadow-sm">
+    <header className="flex shrink-0 flex-wrap items-center gap-2 border-b border-slate-200 bg-white px-3 py-2 shadow-sm sm:h-16 sm:flex-nowrap sm:gap-4 sm:px-4 sm:py-0">
+      <button
+        type="button"
+        onClick={onToggleSidebar}
+        aria-label="Mostrar u ocultar panel de ubicaciones"
+        className="rounded-lg border border-slate-200 p-2 text-slate-500 hover:bg-slate-50 md:hidden"
+      >
+        ☰
+      </button>
+
       <div className="flex items-center gap-2">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor">
@@ -47,7 +58,7 @@ export function TopBar({
         </button>
       </nav>
 
-      <div className="mx-auto flex max-w-md flex-1 items-center">
+      <div className="order-last w-full sm:order-none sm:mx-auto sm:flex sm:max-w-md sm:flex-1 sm:items-center">
         <div className="relative w-full">
           <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
             🔎
@@ -64,7 +75,7 @@ export function TopBar({
       <button
         type="button"
         onClick={onAddLocation}
-        className="whitespace-nowrap rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700"
+        className="ml-auto whitespace-nowrap rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700 sm:ml-0 sm:px-4"
       >
         + Agregar ubicación
       </button>

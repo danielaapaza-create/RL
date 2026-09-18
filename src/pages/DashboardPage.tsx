@@ -5,10 +5,14 @@ import type { useLocations } from '@/hooks/useLocations';
 
 export function DashboardPage({
   store,
+  sidebarOpen,
+  onCloseSidebar,
   onEdit,
   onDelete,
 }: {
   store: ReturnType<typeof useLocations>;
+  sidebarOpen: boolean;
+  onCloseSidebar: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -23,6 +27,8 @@ export function DashboardPage({
         onFiltersChange={setFilters}
         selectedId={selectedId}
         onSelect={setSelectedId}
+        open={sidebarOpen}
+        onClose={onCloseSidebar}
       />
 
       <div className="relative flex-1">
@@ -30,14 +36,32 @@ export function DashboardPage({
       </div>
 
       {selected && (
-        <div className="w-96 shrink-0 border-l border-slate-200 bg-white">
-          <LocationDetail
-            location={selected}
-            onCenter={() => setSelectedId(selected.id)}
-            onEdit={onEdit}
-            onDelete={onDelete}
+        <>
+          <div
+            className="fixed inset-0 z-30 bg-slate-900/40 lg:hidden"
+            onClick={() => setSelectedId(null)}
+            aria-hidden="true"
           />
-        </div>
+          <div className="fixed inset-y-0 right-0 z-40 w-96 max-w-[90vw] shrink-0 border-l border-slate-200 bg-white shadow-xl lg:static lg:z-auto lg:max-w-none lg:shadow-none">
+            <div className="flex items-center justify-between border-b border-slate-100 p-3 lg:hidden">
+              <span className="text-sm font-semibold text-slate-700">Detalle</span>
+              <button
+                type="button"
+                onClick={() => setSelectedId(null)}
+                aria-label="Cerrar detalle"
+                className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100"
+              >
+                ✕
+              </button>
+            </div>
+            <LocationDetail
+              location={selected}
+              onCenter={() => setSelectedId(selected.id)}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
+          </div>
+        </>
       )}
     </div>
   );

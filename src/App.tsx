@@ -14,6 +14,7 @@ type ModalState = { kind: 'none' } | { kind: 'create' } | { kind: 'edit' } | { k
 export default function App() {
   const store = useLocations();
   const [view, setView] = useState<'mapa' | 'rutas'>('mapa');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [modal, setModal] = useState<ModalState>({ kind: 'none' });
   const [deleting, setDeleting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -55,6 +56,7 @@ export default function App() {
       <TopBar
         onAddLocation={() => setModal({ kind: 'create' })}
         onOpenSettings={() => setModal({ kind: 'settings' })}
+        onToggleSidebar={() => setSidebarOpen((open) => !open)}
         search={store.filters.search}
         onSearchChange={(search) => store.setFilters({ ...store.filters, search })}
         activeView={view}
@@ -74,6 +76,8 @@ export default function App() {
       {!store.loading && !store.error && view === 'mapa' && (
         <DashboardPage
           store={store}
+          sidebarOpen={sidebarOpen}
+          onCloseSidebar={() => setSidebarOpen(false)}
           onEdit={() => setModal({ kind: 'edit' })}
           onDelete={() => setModal({ kind: 'delete' })}
         />
