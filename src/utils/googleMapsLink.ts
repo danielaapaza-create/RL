@@ -102,12 +102,20 @@ export function extractPlaceNameFromUrl(url: string): string | null {
   }
 }
 
-/** Normaliza una URL para comparar duplicados literales (ignora query de tracking cuando es posible). */
+/**
+ * Normaliza una URL para comparar duplicados literales.
+ *
+ * Conserva el query string: enlaces como `?q=lat,lng` codifican la
+ * ubicación ahí mismo, así que dos URLs con el mismo path (p. ej.
+ * `google.com/maps`) pero coordenadas distintas en `q=` NO deben
+ * normalizar igual, o se tratarían como el mismo registro.
+ */
 export function normalizeUrl(url: string): string {
   try {
     const parsed = new URL(url.trim());
     parsed.hash = '';
-    return `${parsed.origin}${parsed.pathname}`.toLowerCase().replace(/\/$/, '');
+    const pathname = parsed.pathname.replace(/\/$/, '');
+    return `${parsed.origin}${pathname}${parsed.search}`.toLowerCase();
   } catch {
     return url.trim().toLowerCase();
   }

@@ -88,4 +88,10 @@ describe('normalizeUrl', () => {
   it('produce claves distintas para URLs distintas', () => {
     expect(normalizeUrl('https://maps.app.goo.gl/aaa')).not.toBe(normalizeUrl('https://maps.app.goo.gl/bbb'));
   });
+
+  it('no confunde dos enlaces ?q= distintos que comparten el mismo pathname (enlaces #4 y #5)', () => {
+    const a = normalizeUrl('https://www.google.com/maps?q=-5.7273151,-78.7986693&z=17&hl=es');
+    const b = normalizeUrl('https://www.google.com/maps?q=-7.1828104,-78.4919801&z=17&hl=es');
+    expect(a).not.toBe(b);
+  });
 });
