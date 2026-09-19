@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import type { Map as LeafletMap, Marker as LeafletMarker } from 'leaflet';
 import { MarkerInfo } from './MarkerInfo';
-import { createPinIcon } from '@/utils/mapIcons';
+import { createPinIcon, computePixelOffsets } from '@/utils/mapIcons';
 import { locationsWithOwnMarker } from '@/utils/duplicates';
 import { computeBounds } from '@/utils/geo';
 import type { LocationRecord } from '@/types/location';
@@ -52,6 +52,7 @@ interface MapViewProps {
 
 export function MapView({ locations, selectedId, onSelect }: MapViewProps) {
   const markers = useMemo(() => locationsWithOwnMarker(locations), [locations]);
+  const pixelOffsets = useMemo(() => computePixelOffsets(markers), [markers]);
   const markerRefs = useRef(new Map<string, LeafletMarker>());
   const mapRef = useRef<LeafletMap | null>(null);
 
@@ -79,7 +80,11 @@ export function MapView({ locations, selectedId, onSelect }: MapViewProps) {
         <Marker
           key={loc.id}
           position={[loc.latitude as number, loc.longitude as number]}
-          icon={createPinIcon(CATEGORY_COLOR[loc.category] ?? '#475569', loc.id === selectedId ? 1.15 : 1)}
+          icon={createPinIcon(
+            CATEGORY_COLOR[loc.category] ?? '#475569',
+            loc.id === selectedId ? 1.15 : 1,
+            pixelOffsets.get(loc.id) ?? [0, 0],
+          )}
           eventHandlers={{ click: () => onSelect(loc.id) }}
           ref={(instance) => {
             if (instance) markerRefs.current.set(loc.id, instance);
