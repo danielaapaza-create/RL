@@ -12,8 +12,8 @@ import type { LocationInput } from '@/types/location';
  *
  * Hallazgos relevantes para la importación (ver utils/duplicates.ts):
  * - Los enlaces #2 y #3 son literalmente idénticos (misma URL).
- * - Al resolver, #1 y #2/#3 apuntan a las mismas coordenadas
- *   (-5.6838846, -78.7869977 · "5N, Jaén"): posible duplicado físico.
+ * - Al resolver, #1 (Edhel Group) y #2/#3 (Anthony) apuntan a las mismas
+ *   coordenadas (-5.6838846, -78.7869977): posible duplicado físico.
  * - #6 y #8 resuelven a las mismas coordenadas (-9.104127, -78.541082):
  *   posible duplicado físico.
  * - #7 y #9 resuelven a las mismas coordenadas (-9.609734, -77.508260):
@@ -35,27 +35,27 @@ export interface SeedLocation extends LocationInput {
 export const INITIAL_LOCATIONS: SeedLocation[] = [
   {
     code: 'L01',
-    name: '5N, Jaén (enlace 1)',
+    name: 'Edhel Group',
     original_url: 'https://maps.app.goo.gl/dFWxKu7KvmkwSxeY7',
     latitude: -5.6838846,
     longitude: -78.7869977,
     category: 'punto_entrega',
-    description: 'Resuelto desde enlace corto de Google Maps.',
-    observations: 'Coincide en coordenadas con los registros L02 y L03 (posible duplicado físico).',
+    description: 'Lavadero. Resuelto desde enlace corto de Google Maps.',
+    observations: 'Coincide en coordenadas con los registros L02 (Anthony) y L03 (posible duplicado físico).',
   },
   {
     code: 'L02',
-    name: '5N, Jaén (enlace 2)',
+    name: 'Anthony',
     original_url: 'https://goo.gl/maps/MYHaKdSbbAL2',
     latitude: -5.6838846,
     longitude: -78.7869977,
     category: 'punto_entrega',
-    description: 'Resuelto desde enlace corto de Google Maps.',
+    description: 'Lavadero. Resuelto desde enlace corto de Google Maps.',
     observations: 'Enlace original idéntico al registro L03.',
   },
   {
     code: 'L03',
-    name: '5N, Jaén (enlace 3 — duplicado de L02)',
+    name: 'Anthony (duplicado de L02)',
     original_url: 'https://goo.gl/maps/MYHaKdSbbAL2',
     latitude: -5.6838846,
     longitude: -78.7869977,
@@ -65,60 +65,60 @@ export const INITIAL_LOCATIONS: SeedLocation[] = [
   },
   {
     code: 'L04',
-    name: 'Ubicación con coordenadas explícitas 1',
+    name: 'Mi granja, Avícola Abby SAC',
     original_url: 'https://www.google.com/maps?q=-5.7273151,-78.7986693&z=17&hl=es',
     latitude: -5.7273151,
     longitude: -78.7986693,
     category: 'cliente',
-    description: 'Coordenadas extraídas directamente del parámetro "q" del enlace.',
+    description: 'Lavadero. Coordenadas extraídas directamente del parámetro "q" del enlace.',
   },
   {
     code: 'L05',
-    name: 'Ubicación con coordenadas explícitas 2',
+    name: 'Soto',
     original_url: 'https://www.google.com/maps?q=-7.1828104,-78.4919801&z=17&hl=es',
     latitude: -7.1828104,
     longitude: -78.4919801,
     category: 'cliente',
-    description: 'Coordenadas extraídas directamente del parámetro "q" del enlace.',
+    description: 'Lavadero. Coordenadas extraídas directamente del parámetro "q" del enlace.',
   },
   {
     code: 'L06',
-    name: 'Punto logístico (enlace 6)',
+    name: 'Mendoza',
     original_url: 'https://maps.app.goo.gl/RDAMK6Jya6Nz56qAA',
     latitude: -9.104127,
     longitude: -78.541082,
     category: 'almacen',
-    description: 'Resuelto desde enlace corto de Google Maps.',
-    observations: 'Coincide en coordenadas con el registro L08 (posible duplicado físico).',
+    description: 'Lavadero. Resuelto desde enlace corto de Google Maps.',
+    observations: 'Coincide en coordenadas con el registro L08 (Yeyson — posible duplicado físico).',
   },
   {
     code: 'L07',
-    name: 'Punto logístico (enlace 7)',
+    name: 'CONSORCIO JSG',
     original_url: 'https://maps.app.goo.gl/Y6A6b62Vz3ChQY5GA',
     latitude: -9.609734,
     longitude: -77.50826,
     category: 'almacen',
-    description: 'Resuelto desde enlace corto de Google Maps.',
-    observations: 'Coincide en coordenadas con el registro L09 (posible duplicado físico).',
+    description: 'Lavadero. Resuelto desde enlace corto de Google Maps.',
+    observations: 'Coincide en coordenadas con el registro L09 (Compañía Andina — posible duplicado físico).',
   },
   {
     code: 'L08',
-    name: 'Punto logístico (enlace 8)',
+    name: 'Yeyson',
     original_url: 'https://maps.app.goo.gl/Qxik1apV1Ya1e8Df6',
     latitude: -9.104127,
     longitude: -78.541082,
     category: 'proveedor',
-    description: 'Resuelto desde enlace corto de Google Maps.',
-    observations: 'Coincide en coordenadas con el registro L06 (posible duplicado físico).',
+    description: 'Lavadero. Resuelto desde enlace corto de Google Maps.',
+    observations: 'Coincide en coordenadas con el registro L06 (Mendoza — posible duplicado físico).',
   },
   {
     code: 'L09',
-    name: 'Punto logístico (enlace 9)',
+    name: 'Compañía Andina',
     original_url: 'https://maps.app.goo.gl/GxdfjQu2yii7AHhR8',
     latitude: -9.609734,
     longitude: -77.50826,
     category: 'proveedor',
-    description: 'Resuelto desde enlace corto de Google Maps.',
-    observations: 'Coincide en coordenadas con el registro L07 (posible duplicado físico).',
+    description: 'Lavadero. Resuelto desde enlace corto de Google Maps.',
+    observations: 'Coincide en coordenadas con el registro L07 (CONSORCIO JSG — posible duplicado físico).',
   },
 ];
