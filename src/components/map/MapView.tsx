@@ -52,12 +52,25 @@ export function MapView({ locations, selectedId, onSelect, markerColors }: MapVi
 
   const selectedLocation = markers.find((loc) => loc.id === selectedId) ?? null;
 
-  const activeRoutes = useMemo(() => {
-    if (!selectedLocation) return [];
-    return WASH_ROUTES.filter((route) => route.locationCode === selectedLocation.code)
-      .map((route) => ({ route, zone: FARM_ZONES.find((z) => z.id === route.zoneId) }))
-      .filter((r): r is { route: (typeof WASH_ROUTES)[number]; zone: (typeof FARM_ZONES)[number] } => !!r.zone);
-  }, [selectedLocation]);
+  const visibleCodes = useMemo(() => new Set(markers.map((loc) => loc.code)), [markers]);
+
+  const allRoutes = useMemo(() => {
+    return WASH_ROUTES.filter((route) => visibleCodes.has(route.locationCode))
+      .map((route) => ({
+        route,
+        zone: FARM_ZONES.find((z) => z.id === route.zoneId),
+        location: markers.find((m) => m.code === route.locationCode),
+      }))
+      .filter(
+        (r): r is { route: (typeof WASH_ROUTES)[number]; zone: (typeof FARM_ZONES)[number]; location: LocationRecord } =>
+          !!r.zone && !!r.location,
+      );
+  }, [markers, visibleCodes]);
+
+  const activeRoutes = useMemo(
+    () => (selectedLocation ? allRoutes.filter((r) => r.route.locationCode === selectedLocation.code) : []),
+    [allRoutes, selectedLocation],
+  );
 
   const activeZoneIds = useMemo(() => new Set(activeRoutes.map((r) => r.zone.id)), [activeRoutes]);
 
@@ -65,7 +78,7 @@ export function MapView({ locations, selectedId, onSelect, markerColors }: MapVi
     if (selectedLocation && activeRoutes.length > 0) {
       return [selectedLocation, ...activeRoutes.map((r) => r.zone)];
     }
-    return markers;
+    return [...markers, ...FARM_ZONES];
   }, [markers, activeRoutes, selectedLocation]);
 
   useEffect(() => {
@@ -88,20 +101,30 @@ export function MapView({ locations, selectedId, onSelect, markerColors }: MapVi
 
       <FitBoundsOnData locations={boundsSource} />
 
-      {activeRoutes.map(({ route, zone }) => (
-        <Polyline
-          key={`${route.locationCode}-${route.zoneId}`}
-          positions={[
-            [selectedLocation!.latitude as number, selectedLocation!.longitude as number],
-            [zone.latitude, zone.longitude],
-          ]}
-          pathOptions={{ color: '#0f172a', weight: 2, opacity: 0.7, dashArray: '4 4' }}
-        >
-          <Tooltip direction="center" permanent className="!text-xs !font-medium">
-            {route.km} km
-          </Tooltip>
-        </Polyline>
-      ))}
+      {allRoutes.map(({ route, zone, location }) => {
+        const isActive = selectedLocation ? route.locationCode === selectedLocation.code : false;
+        const dimmed = selectedLocation !== null && !isActive;
+
+        return (
+          <Polyline
+            key={`${route.locationCode}-${route.zoneId}`}
+            positions={[
+              [location.latitude as number, location.longitude as number],
+              [zone.latitude, zone.longitude],
+            ]}
+            pathOptions={{
+              color: isActive ? '#0f172a' : '#94a3b8',
+              weight: isActive ? 2.5 : 1,
+              opacity: dimmed ? 0.15 : isActive ? 0.85 : 0.45,
+              dashArray: isActive ? '5 5' : '2 6',
+            }}
+          >
+            <Tooltip direction="center" permanent={isActive} sticky className="!text-xs !font-medium">
+              {location.name} → {zone.name}: {route.km} km
+            </Tooltip>
+          </Polyline>
+        );
+      })}
 
       {FARM_ZONES.map((zone) => (
         <Marker key={zone.id} position={[zone.latitude, zone.longitude]} icon={createZoneIcon(activeZoneIds.has(zone.id))}>
