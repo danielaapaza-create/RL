@@ -1,7 +1,13 @@
 import L from 'leaflet';
 
-const BASE_WIDTH = 24;
-const BASE_HEIGHT = 32;
+// El viewBox se mantiene en el sistema de coordenadas original de los paths
+// (24x32); BASE_WIDTH/BASE_HEIGHT son el tamaño renderizado en píxeles — al
+// ser mayor que el viewBox, el SVG se escala hacia arriba (símbolo más grande
+// en pantalla, no más "aire" alrededor).
+const VIEWBOX_WIDTH = 24;
+const VIEWBOX_HEIGHT = 32;
+const BASE_WIDTH = 34;
+const BASE_HEIGHT = 45;
 
 /**
  * Paleta categórica de 8 colores (ver skill de dataviz, references/palette.md),
@@ -64,7 +70,7 @@ export function createPinIcon(color: string, scale = 1, pixelOffset: [number, nu
 
   return L.divIcon({
     className: '',
-    html: `<svg width="${width}" height="${height}" viewBox="0 0 ${BASE_WIDTH} ${BASE_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
+    html: `<svg width="${width}" height="${height}" viewBox="0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
       <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="${color}" stroke="#1e293b" stroke-width="1.2" />
       <path d="M12 7.2c-1.7 2.2-3.1 4.2-3.1 5.7a3.1 3.1 0 0 0 6.2 0c0-1.5-1.4-3.5-3.1-5.7z" fill="#ffffff" />
     </svg>`,
@@ -74,7 +80,7 @@ export function createPinIcon(color: string, scale = 1, pixelOffset: [number, nu
   });
 }
 
-const ZONE_DOT_SIZE = 16;
+const ZONE_DOT_SIZE = 22;
 
 /**
  * Ícono circular para zonas de granjas — deliberadamente distinto del pin de
@@ -82,7 +88,7 @@ const ZONE_DOT_SIZE = 16;
  * `active` resalta la zona cuando su lavadero está seleccionado.
  */
 export function createZoneIcon(active: boolean): L.DivIcon {
-  const size = active ? ZONE_DOT_SIZE + 4 : ZONE_DOT_SIZE;
+  const size = active ? ZONE_DOT_SIZE + 6 : ZONE_DOT_SIZE;
   const fill = active ? '#0f172a' : '#94a3b8';
 
   return L.divIcon({
@@ -123,7 +129,7 @@ export function computePixelOffsets<T extends { id: string; latitude: number | n
       offsets.set(ids[0], [0, 0]);
       continue;
     }
-    const radius = 12 + Math.min(n, 6) * 2;
+    const radius = 16 + Math.min(n, 6) * 3;
     ids.forEach((id, i) => {
       const angle = (2 * Math.PI * i) / n - Math.PI / 2;
       offsets.set(id, [Math.round(radius * Math.cos(angle)), Math.round(radius * Math.sin(angle))]);
