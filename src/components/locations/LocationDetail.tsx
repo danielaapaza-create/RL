@@ -2,6 +2,7 @@ import { Badge } from '@/components/common/Badge';
 import { buildGoogleMapsUrlFromCoords } from '@/utils/googleMapsLink';
 import { FARM_ZONES } from '@/data/farmZones';
 import { WASH_ROUTES } from '@/data/washRoutes';
+import { WASH_STATS } from '@/data/washStats';
 import type { LocationRecord } from '@/types/location';
 
 interface LocationDetailProps {
@@ -26,6 +27,8 @@ export function LocationDetail({ location, onCenter, onEdit, onDelete }: Locatio
     ? buildGoogleMapsUrlFromCoords(location.latitude as number, location.longitude as number)
     : location.original_url;
 
+  const washStat = WASH_STATS.find((s) => s.locationCode === location.code) ?? null;
+
   const zoneRoutes = WASH_ROUTES.filter((route) => route.locationCode === location.code)
     .map((route) => ({ km: route.km, zone: FARM_ZONES.find((z) => z.id === route.zoneId) }))
     .filter((r): r is { km: number; zone: NonNullable<(typeof r)['zone']> } => !!r.zone)
@@ -47,6 +50,25 @@ export function LocationDetail({ location, onCenter, onEdit, onDelete }: Locatio
           <Badge tone="danger">Posible duplicado físico — revisar</Badge>
         )}
       </div>
+
+      {washStat && (
+        <div className="grid grid-cols-3 gap-2">
+          <div className="rounded-lg bg-slate-50 px-2.5 py-2 text-center">
+            <div className="text-base font-semibold text-slate-900">{washStat.distributePercent}%</div>
+            <div className="text-[10px] uppercase tracking-wide text-slate-500">Distribuye</div>
+          </div>
+          <div className="rounded-lg bg-slate-50 px-2.5 py-2 text-center">
+            <div className="text-base font-semibold text-slate-900">{100 - washStat.distributePercent}%</div>
+            <div className="text-[10px] uppercase tracking-wide text-slate-500">Recoge</div>
+          </div>
+          <div className="rounded-lg bg-slate-50 px-2.5 py-2 text-center">
+            <div className="text-base font-semibold text-slate-900">
+              {washStat.monthlyJabas.toLocaleString('es-PE')}
+            </div>
+            <div className="text-[10px] uppercase tracking-wide text-slate-500">Jabas/mes</div>
+          </div>
+        </div>
+      )}
 
       <dl className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
         <dt className="text-slate-400">Latitud</dt>
