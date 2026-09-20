@@ -1,5 +1,3 @@
-import type { LocationRecord } from '@/types/location';
-
 export interface LatLngBounds {
   north: number;
   south: number;
@@ -7,11 +5,15 @@ export interface LatLngBounds {
   west: number;
 }
 
+interface HasCoords {
+  latitude: number | null;
+  longitude: number | null;
+}
+
 /** Calcula el encuadre (bounding box) que contiene a todas las ubicaciones con coordenadas válidas. */
-export function computeBounds(locations: LocationRecord[]): LatLngBounds | null {
+export function computeBounds<T extends HasCoords>(locations: T[]): LatLngBounds | null {
   const withCoords = locations.filter(
-    (l): l is LocationRecord & { latitude: number; longitude: number } =>
-      l.latitude !== null && l.longitude !== null,
+    (l): l is T & { latitude: number; longitude: number } => l.latitude !== null && l.longitude !== null,
   );
   if (withCoords.length === 0) return null;
 

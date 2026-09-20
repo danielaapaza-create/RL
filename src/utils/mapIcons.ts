@@ -74,6 +74,28 @@ export function createPinIcon(color: string, scale = 1, pixelOffset: [number, nu
   });
 }
 
+const ZONE_DOT_SIZE = 16;
+
+/**
+ * Ícono circular para zonas de granjas — deliberadamente distinto del pin de
+ * lavadero (forma y tamaño), para que nunca se confundan al ver el mapa.
+ * `active` resalta la zona cuando su lavadero está seleccionado.
+ */
+export function createZoneIcon(active: boolean): L.DivIcon {
+  const size = active ? ZONE_DOT_SIZE + 4 : ZONE_DOT_SIZE;
+  const fill = active ? '#0f172a' : '#94a3b8';
+
+  return L.divIcon({
+    className: '',
+    html: `<svg width="${size}" height="${size}" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="8" cy="8" r="6" fill="${fill}" stroke="#ffffff" stroke-width="2" />
+    </svg>`,
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    popupAnchor: [0, -size / 2],
+  });
+}
+
 /**
  * Calcula un desplazamiento en píxeles por ubicación, para separar
  * visualmente marcadores que comparten coordenadas idénticas (posibles

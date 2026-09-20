@@ -1,5 +1,7 @@
 import { Badge } from '@/components/common/Badge';
 import { buildGoogleMapsUrlFromCoords } from '@/utils/googleMapsLink';
+import { FARM_ZONES } from '@/data/farmZones';
+import { WASH_ROUTES } from '@/data/washRoutes';
 import type { LocationRecord } from '@/types/location';
 
 interface LocationDetailProps {
@@ -23,6 +25,11 @@ export function LocationDetail({ location, onCenter, onEdit, onDelete }: Locatio
   const mapsUrl = hasCoords
     ? buildGoogleMapsUrlFromCoords(location.latitude as number, location.longitude as number)
     : location.original_url;
+
+  const zoneRoutes = WASH_ROUTES.filter((route) => route.locationCode === location.code)
+    .map((route) => ({ km: route.km, zone: FARM_ZONES.find((z) => z.id === route.zoneId) }))
+    .filter((r): r is { km: number; zone: NonNullable<(typeof r)['zone']> } => !!r.zone)
+    .sort((a, b) => a.km - b.km);
 
   return (
     <div className="flex h-full flex-col gap-4 overflow-y-auto p-5">
@@ -69,6 +76,25 @@ export function LocationDetail({ location, onCenter, onEdit, onDelete }: Locatio
         <div>
           <h3 className="text-xs font-semibold uppercase text-slate-400">Observaciones</h3>
           <p className="mt-1 text-sm text-slate-700">{location.observations}</p>
+        </div>
+      )}
+
+      {zoneRoutes.length > 0 && (
+        <div>
+          <h3 className="text-xs font-semibold uppercase text-slate-400">
+            Zonas de granjas ({zoneRoutes.length})
+          </h3>
+          <ul className="mt-1.5 flex flex-col gap-1">
+            {zoneRoutes.map(({ km, zone }) => (
+              <li
+                key={zone.id}
+                className="flex items-center justify-between rounded-md bg-slate-50 px-2.5 py-1.5 text-sm"
+              >
+                <span className="text-slate-700">{zone.name}</span>
+                <span className="font-medium text-slate-900">{km} km</span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

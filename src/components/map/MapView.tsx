@@ -1,16 +1,18 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, Tooltip, useMap } from 'react-leaflet';
 import type { Map as LeafletMap, Marker as LeafletMarker } from 'leaflet';
 import { MarkerInfo } from './MarkerInfo';
-import { createPinIcon, computePixelOffsets } from '@/utils/mapIcons';
+import { createPinIcon, createZoneIcon, computePixelOffsets } from '@/utils/mapIcons';
 import { locationsWithOwnMarker } from '@/utils/duplicates';
 import { computeBounds } from '@/utils/geo';
+import { FARM_ZONES } from '@/data/farmZones';
+import { WASH_ROUTES } from '@/data/washRoutes';
 import type { LocationRecord } from '@/types/location';
 
 const DEFAULT_CENTER: [number, number] = [-9.19, -75.02]; // centro aproximado de Perú
 const DEFAULT_ZOOM = 5;
 
-function FitBoundsOnData({ locations }: { locations: LocationRecord[] }) {
+function FitBoundsOnData({ locations }: { locations: { latitude: number | null; longitude: number | null }[] }) {
   const map = useMap();
 
   useEffect(() => {
@@ -48,6 +50,24 @@ export function MapView({ locations, selectedId, onSelect, markerColors }: MapVi
   const markerRefs = useRef(new Map<string, LeafletMarker>());
   const mapRef = useRef<LeafletMap | null>(null);
 
+  const selectedLocation = markers.find((loc) => loc.id === selectedId) ?? null;
+
+  const activeRoutes = useMemo(() => {
+    if (!selectedLocation) return [];
+    return WASH_ROUTES.filter((route) => route.locationCode === selectedLocation.code)
+      .map((route) => ({ route, zone: FARM_ZONES.find((z) => z.id === route.zoneId) }))
+      .filter((r): r is { route: (typeof WASH_ROUTES)[number]; zone: (typeof FARM_ZONES)[number] } => !!r.zone);
+  }, [selectedLocation]);
+
+  const activeZoneIds = useMemo(() => new Set(activeRoutes.map((r) => r.zone.id)), [activeRoutes]);
+
+  const boundsSource = useMemo(() => {
+    if (selectedLocation && activeRoutes.length > 0) {
+      return [selectedLocation, ...activeRoutes.map((r) => r.zone)];
+    }
+    return markers;
+  }, [markers, activeRoutes, selectedLocation]);
+
   useEffect(() => {
     if (!selectedId) return;
     markerRefs.current.get(selectedId)?.openPopup();
@@ -66,7 +86,33 @@ export function MapView({ locations, selectedId, onSelect, markerColors }: MapVi
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
 
-      <FitBoundsOnData locations={markers} />
+      <FitBoundsOnData locations={boundsSource} />
+
+      {activeRoutes.map(({ route, zone }) => (
+        <Polyline
+          key={`${route.locationCode}-${route.zoneId}`}
+          positions={[
+            [selectedLocation!.latitude as number, selectedLocation!.longitude as number],
+            [zone.latitude, zone.longitude],
+          ]}
+          pathOptions={{ color: '#0f172a', weight: 2, opacity: 0.7, dashArray: '4 4' }}
+        >
+          <Tooltip direction="center" permanent className="!text-xs !font-medium">
+            {route.km} km
+          </Tooltip>
+        </Polyline>
+      ))}
+
+      {FARM_ZONES.map((zone) => (
+        <Marker key={zone.id} position={[zone.latitude, zone.longitude]} icon={createZoneIcon(activeZoneIds.has(zone.id))}>
+          <Popup>
+            <div className="max-w-[180px] p-1">
+              <p className="text-sm font-semibold text-slate-900">{zone.name}</p>
+              <p className="text-xs text-slate-500">Zona de granjas</p>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
 
       {markers.map((loc) => (
         <Marker
