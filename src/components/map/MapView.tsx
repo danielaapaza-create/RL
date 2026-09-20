@@ -113,10 +113,10 @@ export function MapView({ locations, selectedId, onSelect, markerColors }: MapVi
               [zone.latitude, zone.longitude],
             ]}
             pathOptions={{
-              color: isActive ? '#0f172a' : '#94a3b8',
-              weight: isActive ? 2.5 : 1,
-              opacity: dimmed ? 0.15 : isActive ? 0.85 : 0.45,
-              dashArray: isActive ? '5 5' : '2 6',
+              color: isActive ? '#475569' : '#94a3b8',
+              weight: isActive ? 1.5 : 1,
+              opacity: isActive ? 0.7 : dimmed ? 0.3 : 0.45,
+              dashArray: '3 6',
             }}
           >
             <Tooltip direction="center" permanent={isActive} sticky className="!text-xs !font-medium">
