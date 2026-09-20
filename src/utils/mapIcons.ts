@@ -4,6 +4,50 @@ const BASE_WIDTH = 24;
 const BASE_HEIGHT = 32;
 
 /**
+ * Paleta categórica de 8 colores (ver skill de dataviz, references/palette.md),
+ * asignada en orden fijo — nunca ciclada al azar por sesión — para que cada
+ * ubicación tenga siempre el mismo color entre recargas.
+ *
+ * Nota de accesibilidad: validada con `validate_palette.js`, los 8 colores a
+ * la vez (contexto "todos contra todos", como puntos en un mapa) no superan
+ * el piso de distinción para daltonismo — el propio skill documenta que solo
+ * garantiza 3 colores simultáneos en ese escenario. Por eso el nombre de cada
+ * ubicación siempre está disponible (lista lateral, popup al hacer clic): el
+ * color es una ayuda visual adicional, nunca el único identificador.
+ */
+const CATEGORICAL_PALETTE = [
+  '#2a78d6', // azul
+  '#eb6834', // naranja
+  '#1baf7a', // aqua
+  '#eda100', // amarillo
+  '#e87ba4', // magenta
+  '#008300', // verde
+  '#4a3aa7', // violeta
+  '#e34948', // rojo
+];
+
+/**
+ * Asigna un color fijo por ubicación (una por lavadero), en un orden estable
+ * que no cambia con filtros/búsqueda: se calcula sobre el conjunto completo
+ * de ubicaciones con marcador propio (excluye duplicados literales),
+ * ordenado por código.
+ */
+export function assignMarkerColors<T extends { id: string; code: string; duplicate_of: string | null }>(
+  locations: T[],
+): Map<string, string> {
+  const eligible = locations
+    .filter((loc) => loc.duplicate_of === null)
+    .slice()
+    .sort((a, b) => a.code.localeCompare(b.code));
+
+  const colors = new Map<string, string>();
+  eligible.forEach((loc, index) => {
+    colors.set(loc.id, CATEGORICAL_PALETTE[index % CATEGORICAL_PALETTE.length]);
+  });
+  return colors;
+}
+
+/**
  * Pin de marcador dibujado como SVG inline (divIcon), en vez de las imágenes
  * por defecto de Leaflet: evita el problema clásico de rutas de assets rotas
  * al empaquetar con Vite, y permite colorear por categoría igual que antes.

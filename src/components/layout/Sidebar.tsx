@@ -12,6 +12,7 @@ interface SidebarProps {
   onSelect: (id: string) => void;
   open: boolean;
   onClose: () => void;
+  markerColors: Map<string, string>;
 }
 
 export function Sidebar({
@@ -23,6 +24,7 @@ export function Sidebar({
   onSelect,
   open,
   onClose,
+  markerColors,
 }: SidebarProps) {
   return (
     <>
@@ -61,6 +63,7 @@ export function Sidebar({
               onSelect(id);
               onClose();
             }}
+            markerColors={markerColors}
           />
         </div>
       </aside>

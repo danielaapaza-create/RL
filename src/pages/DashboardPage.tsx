@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { MapView } from '@/components/map/MapView';
 import { LocationDetail } from '@/components/locations/LocationDetail';
+import { assignMarkerColors } from '@/utils/mapIcons';
 import type { useLocations } from '@/hooks/useLocations';
 
 export function DashboardPage({
@@ -16,7 +18,8 @@ export function DashboardPage({
   onEdit: () => void;
   onDelete: () => void;
 }) {
-  const { filtered, summary, filters, setFilters, selectedId, setSelectedId, selected } = store;
+  const { locations, filtered, summary, filters, setFilters, selectedId, setSelectedId, selected } = store;
+  const markerColors = useMemo(() => assignMarkerColors(locations), [locations]);
 
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -29,10 +32,11 @@ export function DashboardPage({
         onSelect={setSelectedId}
         open={sidebarOpen}
         onClose={onCloseSidebar}
+        markerColors={markerColors}
       />
 
       <div className="relative flex-1">
-        <MapView locations={filtered} selectedId={selectedId} onSelect={setSelectedId} />
+        <MapView locations={filtered} selectedId={selectedId} onSelect={setSelectedId} markerColors={markerColors} />
       </div>
 
       {selected && (

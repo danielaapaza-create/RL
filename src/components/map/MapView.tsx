@@ -7,15 +7,6 @@ import { locationsWithOwnMarker } from '@/utils/duplicates';
 import { computeBounds } from '@/utils/geo';
 import type { LocationRecord } from '@/types/location';
 
-const CATEGORY_COLOR: Record<string, string> = {
-  almacen: '#2563eb',
-  cliente: '#16a34a',
-  proveedor: '#d97706',
-  punto_entrega: '#dc2626',
-  oficina: '#7c3aed',
-  otro: '#475569',
-};
-
 const DEFAULT_CENTER: [number, number] = [-9.19, -75.02]; // centro aproximado de Perú
 const DEFAULT_ZOOM = 5;
 
@@ -48,9 +39,10 @@ interface MapViewProps {
   locations: LocationRecord[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  markerColors: Map<string, string>;
 }
 
-export function MapView({ locations, selectedId, onSelect }: MapViewProps) {
+export function MapView({ locations, selectedId, onSelect, markerColors }: MapViewProps) {
   const markers = useMemo(() => locationsWithOwnMarker(locations), [locations]);
   const pixelOffsets = useMemo(() => computePixelOffsets(markers), [markers]);
   const markerRefs = useRef(new Map<string, LeafletMarker>());
@@ -81,7 +73,7 @@ export function MapView({ locations, selectedId, onSelect }: MapViewProps) {
           key={loc.id}
           position={[loc.latitude as number, loc.longitude as number]}
           icon={createPinIcon(
-            CATEGORY_COLOR[loc.category] ?? '#475569',
+            markerColors.get(loc.id) ?? '#475569',
             loc.id === selectedId ? 1.15 : 1,
             pixelOffsets.get(loc.id) ?? [0, 0],
           )}

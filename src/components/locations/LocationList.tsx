@@ -5,10 +5,12 @@ export function LocationList({
   locations,
   selectedId,
   onSelect,
+  markerColors,
 }: {
   locations: LocationRecord[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  markerColors: Map<string, string>;
 }) {
   if (locations.length === 0) {
     return (
@@ -26,6 +28,7 @@ export function LocationList({
           location={loc}
           active={loc.id === selectedId}
           onSelect={() => onSelect(loc.id)}
+          color={markerColors.get(loc.id)}
         />
       ))}
     </div>
