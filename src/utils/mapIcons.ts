@@ -66,7 +66,7 @@ export function createPinIcon(color: string, scale = 1, pixelOffset: [number, nu
     className: '',
     html: `<svg width="${width}" height="${height}" viewBox="0 0 ${BASE_WIDTH} ${BASE_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
       <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 20 12 20s12-11 12-20C24 5.4 18.6 0 12 0z" fill="${color}" stroke="#1e293b" stroke-width="1.2" />
-      <circle cx="12" cy="12" r="4.5" fill="#ffffff" />
+      <path d="M12 7.2c-1.7 2.2-3.1 4.2-3.1 5.7a3.1 3.1 0 0 0 6.2 0c0-1.5-1.4-3.5-3.1-5.7z" fill="#ffffff" />
     </svg>`,
     iconSize: [width, height],
     iconAnchor: [width / 2 - dx, height - dy],
@@ -89,6 +89,8 @@ export function createZoneIcon(active: boolean): L.DivIcon {
     className: '',
     html: `<svg width="${size}" height="${size}" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
       <circle cx="8" cy="8" r="6" fill="${fill}" stroke="#ffffff" stroke-width="2" />
+      <path d="M8 3C11 5 11 11 8 13 5 11 5 5 8 3Z" fill="#ffffff" />
+      <path d="M8 4.3v7.4" stroke="${fill}" stroke-width="0.8" stroke-linecap="round" />
     </svg>`,
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
